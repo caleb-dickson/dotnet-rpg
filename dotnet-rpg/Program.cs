@@ -1,3 +1,5 @@
+global using dotnet_rpg.Models;
+
 namespace dotnet_rpg
 {
     public class Program
