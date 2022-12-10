@@ -36,11 +36,25 @@ namespace dotnet_rpg.Services.CharacterService
 
         public async Task<ServiceResponse<GetCharacterDto>> GetCharacterById(int id)
         {
-            return new ServiceResponse<GetCharacterDto>
+            try
             {
-                Data = _mapper.Map<GetCharacterDto>(characters.FirstOrDefault(c => c.Id == id)),
-                Success = true
-            };
+                GetCharacterDto character = _mapper.Map<GetCharacterDto>(characters.FirstOrDefault(c => c.Id == id));
+                if (character == null) throw new ArgumentException("character not found by id " + id);
+
+                return new ServiceResponse<GetCharacterDto>
+                {
+                    Data = _mapper.Map<GetCharacterDto>(characters.FirstOrDefault(c => c.Id == id)),
+                    Success = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<GetCharacterDto>
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
         }
 
         public async Task<ServiceResponse<List<GetCharacterDto>>> GetCharacterList()
@@ -52,14 +66,17 @@ namespace dotnet_rpg.Services.CharacterService
             };
         }
 
-        public async Task<ServiceResponse<GetCharacterDto>> UpdateCharacter(UpdateCharacterDto updateCharacterDto)
+        public async Task<ServiceResponse<GetCharacterDto>> UpdateCharacter(UpdateCharacterDto updateCharacterDto, long id)
         {
-            Character toUpdate = characters.FirstOrDefault(c => c.Id == updateCharacterDto.Id);
 
-            if (toUpdate != null)
+            try
             {
-                toUpdate.Name = updateCharacterDto.Name != null ?
-                    updateCharacterDto.Name : toUpdate.Name;
+
+                Character toUpdate = characters.FirstOrDefault(c => c.Id == id);
+                if (toUpdate == null) throw new ArgumentException("Character not found. Bad ID.");
+
+                toUpdate.Name = updateCharacterDto.Name == null ?
+                    toUpdate.Name : updateCharacterDto.Name;
 
                 toUpdate.HitPoints = updateCharacterDto.HitPoints != null ?
                     updateCharacterDto.HitPoints.Value : toUpdate.HitPoints;
@@ -77,17 +94,53 @@ namespace dotnet_rpg.Services.CharacterService
                     updateCharacterDto.Class.Value : toUpdate.Class;
 
                 toUpdate = _mapper.Map<Character>(updateCharacterDto);
-                GetCharacterDto response = _mapper.Map<GetCharacterDto>(characters.Find(c => c.Id == updateCharacterDto.Id));
+                GetCharacterDto response = _mapper.Map<GetCharacterDto>(characters.Find(c => c.Id == id));
                 return new ServiceResponse<GetCharacterDto>
                 {
                     Data = response,
+                    Success = true,
+                    Message = "character was successfully updated"
+                };
+
+            }
+            catch (Exception ex)
+            {
+
+                return new ServiceResponse<GetCharacterDto>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                };
+
+            }
+
+
+        }
+
+        public async Task<ServiceResponse<GetCharacterDto>> DeleteCharacter(int id)
+        {
+            try
+            {
+                Character toDelete = characters.FirstOrDefault(c => c.Id == id);
+                if (toDelete == null) throw new ArgumentException("Character not found. Bad ID.");
+
+                characters.Remove(toDelete);
+
+                return new ServiceResponse<GetCharacterDto>
+                {
+                    Data = _mapper.Map<GetCharacterDto>(toDelete),
                     Success = true
                 };
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception("Not Found");
+                return new ServiceResponse<GetCharacterDto>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                };
             }
+
         }
     }
 }
