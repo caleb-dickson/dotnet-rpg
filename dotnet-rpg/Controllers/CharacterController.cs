@@ -8,7 +8,8 @@ namespace dotnet_rpg.Controllers
     {
         private static Character knight = new Character();
 
-        public IActionResult Get()
+        [HttpGet]
+        public ActionResult<Character> Get()
         {
             return Ok(knight);
         }
