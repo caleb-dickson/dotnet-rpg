@@ -1,5 +1,7 @@
 global using dotnet_rpg.Models;
+using dotnet_rpg.Data;
 using dotnet_rpg.Services.CharacterService;
+using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_rpg
 {
@@ -8,6 +10,10 @@ namespace dotnet_rpg
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // SQL Server Connection
+            builder.Services.AddDbContext<DataContext>(options =>
+                            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Add services to the container.
 
